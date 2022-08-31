@@ -9,13 +9,19 @@ const tokenToDecimal = (value) => {
 describe('Token', () => {
 
   // we put the variable here so that it can be used by all the tests
-  let token;
+  let token, 
+      accounts,
+      deployer;
 
+  // we need to indicate that we are using async functions 
   beforeEach( async() => {
     // Import teh contract
     const Token = await ethers.getContractFactory('Token');
     // deploy contract
     token = await Token.deploy('My Token', 'MTK', '1000');
+    // get accounts
+    accounts = await ethers.getSigners();
+    deployer = accounts[0];
   })
 
   describe('deployment', () => {
@@ -23,8 +29,7 @@ describe('Token', () => {
     const symbol = 'MTK';
     const decimals = 18;
     const totalSupply = tokenToDecimal(1000);
-
-    // we need to indicate that we are using async functions 
+    
     it('has correct name', async () => {
       expect(await token.name()).to.equal(name);
     })
@@ -39,6 +44,10 @@ describe('Token', () => {
 
     it('has correct total supply', async () => { 
       expect(await token.totalSupply()).to.equal(totalSupply);
+    })
+
+    it('assigns total supply to deployer', async () => { 
+      expect(await token.balanceOf(deployer.address)).to.equal(totalSupply);
     })
   })
 
