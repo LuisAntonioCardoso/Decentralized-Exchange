@@ -44,17 +44,26 @@ contract Token {
         uint256 _value) 
         public returns(bool sucess) 
     {
+        _transfer(msg.sender, _to, _value);
+        return true;
+    }
+
+    function _transfer(
+        address _from,
+        address _to,
+        uint256 _value) 
+        internal    // funciton that can only be called inside the construct
+    {
         // verify if sender has enough tokens to send
-        require(balanceOf[msg.sender] >= _value);
+        require(balanceOf[_from] >= _value);
         // check if sender is not the receiver
         require(_to != address(0));
         // debit sender
-        balanceOf[msg.sender] = balanceOf[msg.sender] - _value;
+        balanceOf[_from] = balanceOf[_from] - _value;
         // credit receiver
         balanceOf[_to] = balanceOf[_to] + _value;
         // emit event
-        emit Transfer(msg.sender, _to, _value);
-        return true;
+        emit Transfer(_from, _to, _value);
     }
 
     function approve(
@@ -67,6 +76,23 @@ contract Token {
 
         allowance[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
+        return true;
+    }
+
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _value) 
+        public returns(bool success)
+    {
+        require(allowance[_from][msg.sender] >= _value);
+
+        // update allowance
+        allowance[_from][msg.sender] = allowance[_from][msg.sender] - _value;
+
+        // transfer tokens
+        _transfer(_from, _to, _value);
+
         return true;
     }
 

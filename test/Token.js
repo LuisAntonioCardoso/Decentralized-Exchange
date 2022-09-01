@@ -145,4 +145,56 @@ describe('Token', () => {
       });
     });
   });
+
+  describe('Delegated token transfers', () => {
+
+    let amount,
+        transaction,
+        result;
+
+    beforeEach( async () => {
+      amount = tokenToDecimal(100);
+      transaction = await token.connect(deployer).approve(exchange.address, amount);
+      result = await transaction.wait();
+    });
+
+    describe('Success', () => {
+
+      beforeEach( async () => {
+        transaction = await token.connect(exchange).transferFrom(deployer.address, receiver.address, amount);
+        result = await transaction.wait();
+      });
+
+      it('Transfers token balances', async () => {
+        
+        expect(await token.balanceOf(deployer.address)).to.be.equal(ethers.utils.parseUnits('900','ether'));
+        expect(await token.balanceOf(receiver.address)).to.be.equal(amount);
+      });
+
+      it('Updates the allowance', async () => {
+        
+        expect(await token.allowance(deployer.address, exchange.address)).to.equal('0');
+      });
+
+      it('emits a transfer event', async () => {
+        const event = result.events[0]; 
+        expect(event.event).to.equal('Transfer');
+        expect(event.args.from).to.equal(deployer.address);
+        expect(event.args.to).to.equal(receiver.address);
+        expect(event.args.value).to.equal(amount);
+      });
+      
+    });
+
+    describe('Failure', () => {
+      
+      const invalidAmount = tokenToDecimal(200);
+
+      it('can not transfer more than allowance', async () => {
+        await expect(token.connect(exchange).transferFrom(deployer.address, receiver.address, invalidAmount)).to.be.reverted;
+      });
+    });
+
+  });
+
 });
