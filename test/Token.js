@@ -12,7 +12,8 @@ describe('Token', () => {
   let token, 
       accounts,
       deployer,
-      receiver;
+      receiver,
+      exchange; // address that we are going to pretend is the exchange
 
   // we need to indicate that we are using async functions 
   beforeEach( async() => {
@@ -24,6 +25,7 @@ describe('Token', () => {
     accounts = await ethers.getSigners();
     deployer = accounts[0];
     receiver = accounts[1];
+    exchange = accounts[2];
   });
 
   describe('Deployment', () => {
@@ -53,7 +55,7 @@ describe('Token', () => {
     })
   });
 
-  describe('Sending Token', async () => {
+  describe('Sending Token', () => {
 
     let amount,
         transaction,
@@ -98,5 +100,49 @@ describe('Token', () => {
       });
     });
 
+  });
+
+  describe('Approving Tokens', () => { 
+
+    let amount,
+        transaction,
+        result;
+
+    beforeEach( async () => {
+      amount = tokenToDecimal(100);
+      transaction = await token.connect(deployer).approve(exchange.address, amount);
+      result = await transaction.wait();
+    });
+
+    describe('Success', () => { 
+
+      it('Allocate allowance or token delegation', async () => {
+
+        expect(await token.allowance(deployer.address, exchange.address)).to.equal(amount);
+      });
+
+      it('emits a approval event', async () => {
+        const event = result.events[0]; 
+        expect(event.event).to.equal('Approval');
+        expect(event.args.owner).to.equal(deployer.address);
+        expect(event.args.spender).to.equal(exchange.address);
+        expect(event.args.value).to.equal(amount);
+      });
+    });
+
+    describe('Failure', () => { 
+
+      it('rejects insufficient balance', async () => {
+  
+        const invalidAmount = tokenToDecimal('10000');
+        await expect(token.connect(deployer).approve(exchange.address, invalidAmount)).to.be.reverted;
+      });
+
+      it('rejects invalid spenders', async () => {
+  
+        const amount = tokenToDecimal('100');
+        await expect(token.connect(deployer).approve('0x0000000000000000000000000000000000000000', amount)).to.be.reverted;
+      });
+    });
   });
 });
