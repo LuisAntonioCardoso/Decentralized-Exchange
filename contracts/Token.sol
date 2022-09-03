@@ -57,9 +57,9 @@ contract Token {
         internal    // funciton that can only be called inside the construct
     {
         // verify if sender has enough tokens to send
-        require(balanceOf[_from] >= _value);
+        require(balanceOf[_from] >= _value, 'insufficient balance');
         // check if sender is not the receiver
-        require(_to != address(0));
+        require(_to != address(0), 'invalid address');
         // debit sender
         balanceOf[_from] = balanceOf[_from] - _value;
         // credit receiver
@@ -73,8 +73,8 @@ contract Token {
         uint256 _value) 
         public returns(bool success) 
     {
-        require(balanceOf[msg.sender] >= _value);
-        require(_spender != address(0));
+        require(balanceOf[msg.sender] >= _value, 'insufficient balance');
+        require(_spender != address(0), 'invalid address');
 
         allowance[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
@@ -87,7 +87,7 @@ contract Token {
         uint256 _value) 
         public returns(bool success)
     {
-        require(allowance[_from][msg.sender] >= _value);
+        require(allowance[_from][msg.sender] >= _value, 'insufficient allowance');
 
         // update allowance
         allowance[_from][msg.sender] = allowance[_from][msg.sender] - _value;
