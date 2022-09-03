@@ -21,12 +21,14 @@ contract Token {
     event Transfer( 
         address indexed from,
         address indexed to,
-        uint256 value); // event to be called when a transfer is done
+        uint256 value
+    ); // event to be called when a transfer is done
 
     event Approval(
         address indexed owner,
         address indexed spender,
-        uint256 value);
+        uint256 value
+    );
 
     constructor(
         string memory _name,
