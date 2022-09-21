@@ -13,6 +13,7 @@ contract Exchange {
 
 	uint256 public orderCount; // orders counter that starts at zero when the order contract is deployed and incremented at every new order
 	mapping(uint256 => Order) public orders;
+	mapping(uint256 => bool) public ordersCancelled;
 
 	// ----------------------------------------------------------------
 	// Structs --------------------------------------------------------
@@ -55,7 +56,15 @@ contract Exchange {
 		uint256 timestamp
 	);
 
-	event CloseOrder();
+	event CancelOrder(
+		uint256 id,
+		address user,
+		address tokenGive,
+		uint256 amountGive,
+		address tokenGet,
+		uint256 amountGet,
+		uint256 timestamp
+	);
 
 	// ----------------------------------------------------------------
 	// Constructor ----------------------------------------------------
@@ -125,37 +134,50 @@ contract Exchange {
 		uint256 _amountGive,
 		address _tokenGet,
 		uint256 _amountGet)
-		public returns(bool sucess)
+		public
 	{
 		require(balanceOf(_tokenGive, msg.sender) >= _amountGive);
 
 		orderCount = orderCount + 1;
-		Order memory order = 	Order(
-									orderCount, 
-									msg.sender, 
-									_tokenGive, 
-									_amountGive, 
-									_tokenGet, 
-									_amountGet,
-									block.timestamp // epoch time
+		Order memory _order = 	Order(
+								orderCount, 
+								msg.sender, 
+								_tokenGive, 
+								_amountGive, 
+								_tokenGet, 
+								_amountGet,
+								block.timestamp // epoch time
 		);
+		orders[orderCount]=_order;
 		
 		emit OpenOrder(
-			order.id, 
-			order.user, 
-			order.tokenGive, 
-			order.amountGive, 
-			order.tokenGet,
-			order.amountGet,
-			order.timestamp
+			_order.id, 
+			_order.user, 
+			_order.tokenGive, 
+			_order.amountGive, 
+			_order.tokenGet,
+			_order.amountGet,
+			_order.timestamp
 		);
+	}
+
+	function cancelOrder(uint256 _id) public {
+
+		Order storage _order = orders[_id];
+		require(_order.id == _id);
+		require(_order.user == msg.sender);
 		
-		orders[orderCount]=order;
-		
-		
-		
-		
-		return sucess;
+		ordersCancelled[_id] = true;
+
+		emit CancelOrder(
+			_order.id, 
+			_order.user, 
+			_order.tokenGive, 
+			_order.amountGive, 
+			_order.tokenGet,
+			_order.amountGet,
+			_order.timestamp
+		);
 
 	}
 
