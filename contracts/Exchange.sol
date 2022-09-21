@@ -11,6 +11,26 @@ contract Exchange {
 
 	mapping(address => mapping(address => uint256)) public tokenBalanceOf;
 
+	uint256 public orderCount; // orders counter that starts at zero when the order contract is deployed and incremented at every new order
+	mapping(uint256 => Order) public orders;
+
+	// ----------------------------------------------------------------
+	// Structs --------------------------------------------------------
+
+	// way to model the order
+	struct Order {
+		uint256 id;			// Unique identifier for the order
+		address user;		// User who created the order
+		address tokenGive;	// token spent
+		uint256 amountGive;
+		address tokenGet;	// token to receive
+		uint256 amountGet;
+		uint256 timestamp; // when the order was created
+	}
+
+	// ----------------------------------------------------------------
+	// Events ---------------------------------------------------------
+
 	event Deposit(
 		address token,
 		address user,
@@ -25,6 +45,21 @@ contract Exchange {
 		uint256 balance
 	);
 
+	event OpenOrder(
+		uint256 id,
+		address user,
+		address tokenGive,
+		uint256 amountGive,
+		address tokenGet,
+		uint256 amountGet,
+		uint256 timestamp
+	);
+
+	event CloseOrder();
+
+	// ----------------------------------------------------------------
+	// Constructor ----------------------------------------------------
+
 	constructor(
 		address _feeAccount,
 		uint256 _feeRate) 
@@ -32,6 +67,9 @@ contract Exchange {
 		feeAccount = _feeAccount;
 		feeRate = _feeRate;
 	}
+
+	// ----------------------------------------------------------------
+	// Deposit and Withdraw tokens ------------------------------------
 
 	function depositToken( 
 		address _token,
@@ -75,6 +113,50 @@ contract Exchange {
 		public view returns(uint256)
 	{
 		return tokenBalanceOf[_token][_user];
+	}
+
+	// ----------------------------------------------------------------
+	// Make and Cancel Orders -----------------------------------------
+
+	// token Give -> token they want to spend (which token and how much)
+	// token Get -> token they want to receive (which token and how much)
+	function makeOrder(
+		address _tokenGive,
+		uint256 _amountGive,
+		address _tokenGet,
+		uint256 _amountGet)
+		public returns(bool sucess)
+	{
+		require(balanceOf(_tokenGive, msg.sender) >= _amountGive);
+
+		orderCount = orderCount + 1;
+		Order memory order = 	Order(
+									orderCount, 
+									msg.sender, 
+									_tokenGive, 
+									_amountGive, 
+									_tokenGet, 
+									_amountGet,
+									block.timestamp // epoch time
+		);
+		
+		emit OpenOrder(
+			order.id, 
+			order.user, 
+			order.tokenGive, 
+			order.amountGive, 
+			order.tokenGet,
+			order.amountGet,
+			order.timestamp
+		);
+		
+		orders[orderCount]=order;
+		
+		
+		
+		
+		return sucess;
+
 	}
 
 }
