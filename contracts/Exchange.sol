@@ -14,6 +14,7 @@ contract Exchange {
 	uint256 public orderCount; // orders counter that starts at zero when the order contract is deployed and incremented at every new order
 	mapping(uint256 => Order) public orders;
 	mapping(uint256 => bool) public ordersCancelled;
+	mapping(uint256 => bool) public ordersFilled;
 
 	// ----------------------------------------------------------------
 	// Structs --------------------------------------------------------
@@ -59,6 +60,17 @@ contract Exchange {
 	event CancelOrder(
 		uint256 id,
 		address user,
+		address tokenGive,
+		uint256 amountGive,
+		address tokenGet,
+		uint256 amountGet,
+		uint256 timestamp
+	);
+
+	event Trade(
+		uint256 orderId,
+		address orderCreator,
+		address orderTaker,
 		address tokenGive,
 		uint256 amountGive,
 		address tokenGet,
@@ -178,7 +190,48 @@ contract Exchange {
 			_order.amountGet,
 			_order.timestamp
 		);
+	}
+
+
+	// ----------------------------------------------------------------
+	// Executing Orders -----------------------------------------------
+
+	function fillOrder(uint256 _id) public {
+
+		Order storage _order = orders[_id];
+
+		require(_id > 0 && _id <= orderCount, 'Order does not exist');
+		require(_order.id == _id, 'order is invalid');
+		require(!ordersCancelled[_order.id], 'order is already cancelled');
+		require(!ordersFilled[_order.id], 'order is already filled');
+
+		trade(_order);
+
+		ordersFilled[_order.id] = true;
 
 	}
 
+	function trade(Order storage _order) internal {
+
+		uint256 _feeAmount = (_order.amountGet * feeRate) / 100;
+
+		tokenBalanceOf[_order.tokenGet][msg.sender] = tokenBalanceOf[_order.tokenGet][msg.sender] - (_order.amountGet + _feeAmount);
+		tokenBalanceOf[_order.tokenGet][_order.user] = tokenBalanceOf[_order.tokenGet][_order.user] + _order.amountGet;
+		
+		tokenBalanceOf[_order.tokenGive][msg.sender] = tokenBalanceOf[_order.tokenGive][msg.sender] + _order.amountGive;
+		tokenBalanceOf[_order.tokenGive][_order.user] = tokenBalanceOf[_order.tokenGive][_order.user] - _order.amountGive;
+
+		tokenBalanceOf[_order.tokenGet][feeAccount] = tokenBalanceOf[_order.tokenGet][feeAccount] + _feeAmount;
+
+		emit Trade(
+			_order.id,
+			_order.user,
+			msg.sender,
+			_order.tokenGive,
+			_order.amountGive,
+			_order.tokenGet,
+			_order.amountGet,
+			block.timestamp
+		);
+	}
 }
