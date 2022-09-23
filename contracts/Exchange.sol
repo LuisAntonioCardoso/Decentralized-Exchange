@@ -101,7 +101,7 @@ contract Exchange {
 		require(Token(_token).transferFrom(msg.sender, address(this), _amount), 'token transfer failed');
 
 		// update balances
-		tokenBalanceOf[_token][msg.sender] = tokenBalanceOf[_token][msg.sender] + _amount;
+		tokenBalanceOf[_token][msg.sender] += _amount;
 
 		// emit event
 		emit Deposit(_token, msg.sender, _amount, tokenBalanceOf[_token][msg.sender]);
@@ -115,12 +115,11 @@ contract Exchange {
 	{
 		//test requisits
 		require(tokenBalanceOf[_token][msg.sender] >= _amount, 'insufficient balance');
-	
 		// transfer tokens (we use transfer and not transfer from, because now we are the holders of the tokens)
 		require(Token(_token).transfer(msg.sender, _amount), 'token transfer failed');
 
 		// update user balance
-		tokenBalanceOf[_token][msg.sender] = tokenBalanceOf[_token][msg.sender] - _amount;
+		tokenBalanceOf[_token][msg.sender] -= _amount;
 
 		// emit event
 		emit Withdraw(_token, msg.sender, _amount, tokenBalanceOf[_token][msg.sender]);
@@ -150,9 +149,9 @@ contract Exchange {
 	{
 		require(balanceOf(_tokenGive, msg.sender) >= _amountGive);
 
-		orderCount = orderCount + 1;
+		
 		Order memory _order = 	Order(
-								orderCount, 
+								++orderCount, 
 								msg.sender, 
 								_tokenGive, 
 								_amountGive, 
@@ -215,13 +214,13 @@ contract Exchange {
 
 		uint256 _feeAmount = (_order.amountGet * feeRate) / 100;
 
-		tokenBalanceOf[_order.tokenGet][msg.sender] = tokenBalanceOf[_order.tokenGet][msg.sender] - (_order.amountGet + _feeAmount);
-		tokenBalanceOf[_order.tokenGet][_order.user] = tokenBalanceOf[_order.tokenGet][_order.user] + _order.amountGet;
+		tokenBalanceOf[_order.tokenGet][msg.sender] -= (_order.amountGet + _feeAmount);
+		tokenBalanceOf[_order.tokenGet][_order.user] += _order.amountGet;
 		
-		tokenBalanceOf[_order.tokenGive][msg.sender] = tokenBalanceOf[_order.tokenGive][msg.sender] + _order.amountGive;
-		tokenBalanceOf[_order.tokenGive][_order.user] = tokenBalanceOf[_order.tokenGive][_order.user] - _order.amountGive;
+		tokenBalanceOf[_order.tokenGive][msg.sender] += _order.amountGive;
+		tokenBalanceOf[_order.tokenGive][_order.user] -= _order.amountGive;
 
-		tokenBalanceOf[_order.tokenGet][feeAccount] = tokenBalanceOf[_order.tokenGet][feeAccount] + _feeAmount;
+		tokenBalanceOf[_order.tokenGet][feeAccount] += _feeAmount;
 
 		emit Trade(
 			_order.id,
