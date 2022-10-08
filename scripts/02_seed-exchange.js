@@ -70,14 +70,14 @@ async function main() {
 
 
 	let orderId;
-	// --------------------------------------------------------------
-	// Seed a Cancelled Order
+// --------------------------------------------------------------
+// Seed a Cancelled Order
 
 	// user1 makes order
 	amount = Tokens('10');
 	transaction = await exchange.connect(user1).makeOrder(mDAI.address, amount, mETH.address, amount);
 	result = await transaction.wait();
-	console.log(`Make order from user1 ${user1.address}\n`);
+	console.log(`Make order from user1 ${user1.address}`);
 
 	// user1 cancels order
 	orderId = result.events[0].args.id;
@@ -87,15 +87,16 @@ async function main() {
 
 	// wait 1 sec
 	wait(1);
+// --------------------------------------------------------------
 
-	// --------------------------------------------------------------
-	// Seed a Filled Order
+// --------------------------------------------------------------
+// Seed a Filled Order
 
 	// user1 makes order
 	amount = Tokens('10');
 	transaction = await exchange.connect(user1).makeOrder(mDAI.address, amount, mETH.address, amount);
 	result = await transaction.wait();
-	console.log(`Make order from user1 ${user1.address}\n`);
+	console.log(`Make order from user1 ${user1.address}`);
 
 	// user2 fills order
 	orderId = result.events[0].args.id;
@@ -110,7 +111,7 @@ async function main() {
 	amount = Tokens('35');
 	transaction = await exchange.connect(user1).makeOrder(mDAI.address, amount, mETH.address, amount);
 	result = await transaction.wait();
-	console.log(`Make order from user1 ${user1.address}\n`);
+	console.log(`Make order from user1 ${user1.address}`);
 
 	// user2 fills another order
 	orderId = result.events[0].args.id;
@@ -125,7 +126,7 @@ async function main() {
 	amount = Tokens('127');
 	transaction = await exchange.connect(user1).makeOrder(mDAI.address, amount, mETH.address, amount);
 	result = await transaction.wait();
-	console.log(`Make order from user1 ${user1.address}\n`);
+	console.log(`Make order from user1 ${user1.address}`);
 
 	// user2 fills final order
 	orderId = result.events[0].args.id;
@@ -134,9 +135,10 @@ async function main() {
 	console.log(`User2 ${user2.address} filled order ${orderId}\n`);
 	// wait 1 sec
 	wait(1);
+// --------------------------------------------------------------
 
-	// --------------------------------------------------------------
-	// Seed a Filled Order
+// --------------------------------------------------------------
+// Seed Open Orders
 
 	amount = Tokens(random());
 
@@ -144,7 +146,7 @@ async function main() {
 	for(let i = 0; i <= 10; i++) {
 		transaction = await exchange.connect(user1).makeOrder(mDAI.address, Tokens(random()), mETH.address, Tokens(random()));
 		result = await transaction.wait();
-		console.log(`Make order from user1 ${user1.address}\n`);
+		console.log(`Make order from user1 ${user1.address}`);
 		wait(1);
 	}
 	
@@ -152,10 +154,10 @@ async function main() {
 	for(let i = 0; i <= 10; i++) {
 		transaction = await exchange.connect(user2).makeOrder(mETH.address, Tokens(random()), mDAI.address, Tokens(random()));
 		result = await transaction.wait();
-		console.log(`Make order from user2 ${user2.address}\n`);
+		console.log(`Make order from user2 ${user2.address}`);
 		wait(1);
 	}
-	
+// --------------------------------------------------------------
 
 }
 
