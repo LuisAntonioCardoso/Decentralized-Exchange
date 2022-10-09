@@ -4,12 +4,14 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 
 import {
 	provider,
-	tokens
+	tokens,
+	exchange
 } from './reducers.js';
 
 const reducer = combineReducers({
 	provider,
-	tokens
+	tokens,
+	exchange
 })
 
 const initialState = {};
