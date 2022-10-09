@@ -1,32 +1,27 @@
 import { useEffect } from 'react';
-import { ethers } from 'ethers';
+import { useDispatch } from 'react-redux';
 import config from '../config.json';
-import TOKEN_ABI from '../abis/Token.json';
-import EXCHANGE_ABI from '../abis/Exchange.json';
-import './../App.css';
+
+import {  
+  loadProvider, 
+  loadNetwork,
+  loadAccount,
+  loadToken
+} from '../store/interactions.js';
+
 
 function App() {
 
+  const dispatch = useDispatch();
+
   // function that fetches wallet connected to the browser
   const loadBlockchainData = async () => {
-    const accounts = await window.ethereum.request({method:'eth_requestAccounts'});
-    console.log(accounts[0]);
+    
+    await loadAccount(dispatch);
+    const provider = loadProvider(dispatch); // provider is going to be our connection to the blockchain
+    const chainId = await loadNetwork(dispatch, provider); 
 
-    // Connect ethers to the blockchain
-    // not needed when using ethers from hardhat because it's different library
-    const provider = new ethers.providers.Web3Provider(window.ethereum); // provider is going to be our connection to the blockchain
-    const network = await provider.getNetwork();
-    console.log(network);
- 
-    // when can use {<property>} to get only the properties needed 
-    const {chainId} = network;
-    console.log(chainId);
-
-    // token smart contract
-    const token = new ethers.Contract(config[chainId].mDAI.address,TOKEN_ABI,provider);
-    console.log(token.address);
-    const symbol = await token.symbol();
-    console.log(symbol);
+    await loadToken(dispatch, provider, config[chainId].mDAI.address);
 
   }
 
