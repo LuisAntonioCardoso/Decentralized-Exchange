@@ -1,3 +1,6 @@
+// reducers are used to add things to the store
+// since we are going to use the reducers in other files, we need to use "export" (in the interactions file)
+
 export const provider = (state = {}, action) => {
 
 	switch (action.type) {

@@ -9,6 +9,8 @@ import store from './store/store';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
+  // The provider component is from react-redux and makes the redux store 
+  //    available to all the components inside (nothing to do with the web3 provider)
   <Provider store={store}>
     <App />
   </Provider>

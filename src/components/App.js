@@ -15,7 +15,14 @@ function App() {
 
   const dispatch = useDispatch();
 
-  // function that fetches wallet connected to the browser
+  /**
+   * function where we gather information about the blockchain
+   * this includes:
+   *    - the node we are using to interact with the blockchain (provider)
+   *    - the blockchain ID
+   *    - connect the browser wallet
+   *    - the smart contract addresses
+   */
   const loadBlockchainData = async () => {
 
     // connect Ethers to blockchain
@@ -36,7 +43,7 @@ function App() {
     await loadExchange(dispatch, provider, exchange.address);
   }
 
-  // useEffect is what is going to be ran once the app component is loaded
+  // useEffect is what is going to run once the app component is loaded
   useEffect(() => {
     loadBlockchainData();
   })

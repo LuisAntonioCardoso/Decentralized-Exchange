@@ -20,7 +20,8 @@ export const loadProvider = (dispatch) => {
 
 export const loadNetwork = async (dispatch, provider) => {
 	const network = await provider.getNetwork(); 
-    // when can use {<property>} to get only the properties needed 
+    // when can use {<property>} to get only the properties needed ~
+	// const { chainId } = await provider.getNetwork(); 
     const { chainId } = network;
 
 	dispatch({ type: 'NETWORK_LOADED', chainId});
@@ -29,6 +30,7 @@ export const loadNetwork = async (dispatch, provider) => {
 }
 
 export const loadAccount = async (dispatch, provider) => {
+	// this is the standard way to fetch a metamask wallet account
 	const accounts = await window.ethereum.request({ method:'eth_requestAccounts' });
 	// getAddress returns the address of a account (individual or smart contract) in the right format 
 	const account = ethers.utils.getAddress(accounts[0]);
