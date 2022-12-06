@@ -11,6 +11,7 @@ import {
 } from '../store/interactions.js';
 
 import Navbar from './Navbar';
+import Markets from './Markets';
 
 
 function App() {
@@ -47,10 +48,10 @@ function App() {
     
     // Load tokens and exchange smart contracts
     const mDAI = config[chainId].mDAI;
-    const mBTC = config[chainId].mBTC;
     const mETH = config[chainId].mETH;
+    await loadTokens(dispatch, provider, [mDAI.address, mETH.address]);
+
     const exchange = config[chainId].exchange;
-    await loadTokens(dispatch, provider, [mDAI.address, mBTC.address, mETH.address]);
     await loadExchange(dispatch, provider, exchange.address);
   }
 
@@ -67,7 +68,8 @@ function App() {
       <main className='exchange grid'>
         <section className='exchange__section--left grid'>
 
-          {/* Markets */}
+          <Markets/>
+
 
           {/* Balance */}
 

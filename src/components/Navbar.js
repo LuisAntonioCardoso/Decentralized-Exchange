@@ -47,7 +47,8 @@ const Navbar = () => {
 						<option value="0x7A69">Localhost</option>
 						<option value="0x5">Goerli</option>
 					</select>
-				: null}
+				: null
+				}
 				
 			</div>
   
