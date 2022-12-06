@@ -23,7 +23,7 @@ describe('Exchange', () => {
 		const Exchange = await ethers.getContractFactory('Exchange');
 		const Token = await ethers.getContractFactory('Token');
 
-		accounts = await ethers.getSigners();
+		let accounts = await ethers.getSigners();
 		deployer = accounts[0];
 		feeAccount = accounts[1];
 		user1 = accounts[2];
