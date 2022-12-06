@@ -45,8 +45,10 @@ export const tokens = (state = DEFAULT_TOKENS_STATE, action) => {
 			return {
 				...state,
 				loaded: action.connection,
-				contracts: [...state.contracts, action.token],
-				symbols: [...state.symbols, action.symbol]
+				// Here we don't use "[...state.contracts" because we don't want to add on 
+				// 	top of what we already have, instead we want to overwrite
+				contracts: [action.token],
+				symbols: [action.symbol]
 			};
 		case 'TOKEN_2_LOADED':
 			return {
