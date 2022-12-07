@@ -7,12 +7,13 @@ import {
   loadNetwork,
   loadAccount,
   loadTokens,
-  loadExchange
+  loadExchange,
+  subscribeToEvents
 } from '../store/interactions.js';
 
 import Navbar from './Navbar';
 import Markets from './Markets';
-
+import Balance from './Balance';
 
 function App() {
 
@@ -51,8 +52,10 @@ function App() {
     const mETH = config[chainId].mETH;
     await loadTokens(dispatch, provider, [mDAI.address, mETH.address]);
 
-    const exchange = config[chainId].exchange;
-    await loadExchange(dispatch, provider, exchange.address);
+    const exchangeConfig = config[chainId].exchange;
+    const exchange = await loadExchange(dispatch, provider, exchangeConfig.address);
+  
+    subscribeToEvents(dispatch, exchange);
   }
 
   // useEffect is what is going to run once the app component is loaded
@@ -70,8 +73,7 @@ function App() {
 
           <Markets/>
 
-
-          {/* Balance */}
+          <Balance/>
 
           {/* Order */}
 

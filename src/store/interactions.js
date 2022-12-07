@@ -67,3 +67,59 @@ export const loadExchange = async (dispatch, provider, address) => {
 	
 	return exchange;
 }
+
+// ----------------------------------------------------------------
+// LOAD USER BALANCES (WALLET AND EXCHANGE)
+
+export const loadBalances = async (dispatch, exchange, account, tokens) => {
+
+	let balance;
+
+	balance = ethers.utils.formatUnits( await tokens[0].balanceOf(account) , 18); // convert balance to ETH 
+	dispatch({ type: 'TOKEN_1_BALANCE_LOADED', balance });
+
+	balance = ethers.utils.formatUnits( await exchange.balanceOf(tokens[0].address, account) , 18); // convert balance to ETH 
+	dispatch({ type: 'EXCHANGE_TOKEN_1_BALANCE_LOADED', balance });
+
+	balance = ethers.utils.formatUnits( await tokens[1].balanceOf(account) , 18); // convert balance to ETH 
+	dispatch({ type: 'TOKEN_2_BALANCE_LOADED', balance });
+
+	balance = ethers.utils.formatUnits( await exchange.balanceOf(tokens[0].address, account) , 18); // convert balance to ETH 
+	dispatch({ type: 'EXCHANGE_TOKEN_2_BALANCE_LOADED', balance });
+}
+
+// ----------------------------------------------------------------
+// TRANSFER TOKENS (DEPOSITS AND WITHDRAWS)
+
+export const transferTokens = async (dispatch, provider, exchange, transferType, token, amount) => {
+
+	let transaction;
+
+	dispatch({ type: 'TRANSFER_REQUEST' });
+
+	try {
+		
+		const signer = await provider.getSigner();
+		const amountToTransfer = ethers.utils.parseUnits(amount.toString(), 18);
+
+		transaction = await token.connect(signer).approve(exchange.address, amountToTransfer); // user allows exchange to transfer tokens 
+		await transaction.wait();
+		transaction = await exchange.connect(signer).depositToken(token.address, amountToTransfer); // user calls function that make the exchange order the transaction of tokens
+		await transaction.wait();
+
+	} catch (error) {
+		// TODO: change this to alert the user in case of error
+
+		dispatch({ type: 'TRANSFER_FAIL' });
+		console.error(error);
+	}
+
+}
+
+export const subscribeToEvents = (dispatch, exchange) => {
+
+	exchange.on('Deposit', (token, user, amount, balance, event) => {
+
+		dispatch({ type: 'TRANSFER_SUCCESS', event })
+	})
+}
