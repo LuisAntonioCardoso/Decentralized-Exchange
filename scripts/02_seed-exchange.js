@@ -48,12 +48,12 @@ async function main() {
 	// user1 sends user2 1,000 mBTC
 	transaction = await mBTC.connect(sender).transfer(receiver.address, Tokens(1000));
 	await transaction.wait();
-	console.log(`User1 ${sender.address} sends 100,000 mETH to user2 ${receiver.address}\n`);
+	console.log(`User1 ${sender.address} sends 100,000 mBTC to user2 ${receiver.address}\n`);
 
 	// user1 sends user2 10,000,000 mDAI
 	transaction = await mDAI.connect(sender).transfer(receiver.address, Tokens(10000000));
 	await transaction.wait();
-	console.log(`User1 ${sender.address} sends 100,000 mETH to user2 ${receiver.address}\n`);
+	console.log(`User1 ${sender.address} sends 100,000 mDAI to user2 ${receiver.address}\n`);
 
 	const user1 = accounts[0];
 	const user2 = accounts[1];

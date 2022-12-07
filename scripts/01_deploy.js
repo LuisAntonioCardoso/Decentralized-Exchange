@@ -18,15 +18,15 @@ async function main() {
     console.log(`Accounts fetched:\n${accounts[0].address}\n${accounts[1].address}\n`);
 
     // Deploy contract
-    const mDAI = await Token.deploy('mock dai', 'mDAI', '10000000');
+    const mDAI = await Token.deploy('mock dai', 'mDAI', '100000000');
     await mDAI.deployed();
     console.log(`mDAI deployed to: ${mDAI.address}`);
 
-    const mBTC = await Token.deploy('mock btc', 'mBTC', '10000000');
+    const mBTC = await Token.deploy('mock btc', 'mBTC', '100000000');
     await mBTC.deployed();
     console.log(`mBTC deployed to: ${mBTC.address}`);
 
-    const mETH = await Token.deploy('mock eth', 'mETH', '10000000');
+    const mETH = await Token.deploy('mock eth', 'mETH', '100000000');
     await mETH.deployed();
     console.log(`mETH deployed to: ${mETH.address}`);
 
