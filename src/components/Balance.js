@@ -34,10 +34,12 @@ const Balance = () => {
 
 		setToken1TransferAmount(event.target.value);
 	};
-	const depositToken1Handler = async (event) => {
+	const transferToken1Handler = async (event) => {
+
+		const transferType = isDeposit ? 'Deposit' : 'Withdraw'; // choose it it's a deposit or a withdraw
 
 		event.preventDefault(); // prevents the page from refreshing on execution
-		transferTokens(dispatch, provider, exchange, 'Deposit', tokens[0], token1TransferAmount);
+		transferTokens(dispatch, provider, exchange, transferType, tokens[0], token1TransferAmount);
 		setToken1TransferAmount(0);
 	};
 
@@ -47,10 +49,12 @@ const Balance = () => {
 
 		setToken2TransferAmount(event.target.value);
 	};
-	const depositToken2Handler = async (event) => {
+	const transferToken2Handler = async (event) => {
+
+		const transferType = isDeposit ? 'Deposit' : 'Withdraw'; // choose it it's a deposit or a withdraw
 
 		event.preventDefault(); // prevents the page from refreshing on execution
-		transferTokens(dispatch, provider, exchange, 'Deposit', tokens[1], token2TransferAmount);
+		transferTokens(dispatch, provider, exchange, transferType, tokens[1], token2TransferAmount);
 		setToken2TransferAmount(0);
 	};
 
@@ -121,7 +125,7 @@ const Balance = () => {
 					</p>
 				</div>
 	
-				<form onSubmit={depositToken1Handler}>
+				<form onSubmit={transferToken1Handler}>
 					<label htmlFor="token0">
 						{ symbols ?
 							symbols[0] 
@@ -175,7 +179,7 @@ const Balance = () => {
 					</p>
 				</div>
 	
-				<form onSubmit={depositToken2Handler}>
+				<form onSubmit={transferToken2Handler}>
 					<label htmlFor="token1">
 						{ symbols ?
 							symbols[1] 

@@ -102,10 +102,18 @@ export const transferTokens = async (dispatch, provider, exchange, transferType,
 		const signer = await provider.getSigner();
 		const amountToTransfer = ethers.utils.parseUnits(amount.toString(), 18);
 
-		transaction = await token.connect(signer).approve(exchange.address, amountToTransfer); // user allows exchange to transfer tokens 
-		await transaction.wait();
-		transaction = await exchange.connect(signer).depositToken(token.address, amountToTransfer); // user calls function that make the exchange order the transaction of tokens
-		await transaction.wait();
+		if(transferType === 'Deposit')
+		{
+			transaction = await token.connect(signer).approve(exchange.address, amountToTransfer); // user allows exchange to transfer tokens 
+			await transaction.wait();
+			transaction = await exchange.connect(signer).depositToken(token.address, amountToTransfer); // user calls function that make the exchange order the transaction of tokens
+			await transaction.wait();
+		}
+		else
+		{
+			transaction = await exchange.connect(signer).withdrawToken(token.address, amountToTransfer); // user calls function that make the exchange order the transaction of tokens
+			await transaction.wait();
+		}
 
 	} catch (error) {
 		// TODO: change this to alert the user in case of error
@@ -119,7 +127,9 @@ export const transferTokens = async (dispatch, provider, exchange, transferType,
 export const subscribeToEvents = (dispatch, exchange) => {
 
 	exchange.on('Deposit', (token, user, amount, balance, event) => {
-
 		dispatch({ type: 'TRANSFER_SUCCESS', event })
-	})
+	});
+	exchange.on('Withdraw', (token, user, amount, balance, event) => {
+		dispatch({ type: 'TRANSFER_SUCCESS', event })
+	});
 }
