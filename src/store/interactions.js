@@ -84,7 +84,7 @@ export const loadBalances = async (dispatch, exchange, account, tokens) => {
 	balance = ethers.utils.formatUnits( await tokens[1].balanceOf(account) , 18); // convert balance to ETH 
 	dispatch({ type: 'TOKEN_2_BALANCE_LOADED', balance });
 
-	balance = ethers.utils.formatUnits( await exchange.balanceOf(tokens[0].address, account) , 18); // convert balance to ETH 
+	balance = ethers.utils.formatUnits( await exchange.balanceOf(tokens[1].address, account) , 18); // convert balance to ETH 
 	dispatch({ type: 'EXCHANGE_TOKEN_2_BALANCE_LOADED', balance });
 }
 
