@@ -9,7 +9,7 @@ export const provider = (state = {}, action) => {
 				...state,
 				connection: action.connection
 			};
-		
+
 		case 'NETWORK_LOADED':
 			return {
 				...state,
@@ -32,10 +32,10 @@ export const provider = (state = {}, action) => {
 	}
 }
 
-const DEFAULT_TOKENS_STATE = { 
-	loaded: false, 
-	contracts: [], 
-	symbols: [] 
+const DEFAULT_TOKENS_STATE = {
+	loaded: false,
+	contracts: [],
+	symbols: []
 };
 
 export const tokens = (state = DEFAULT_TOKENS_STATE, action) => {
@@ -45,7 +45,7 @@ export const tokens = (state = DEFAULT_TOKENS_STATE, action) => {
 			return {
 				...state,
 				loaded: action.connection,
-				// Here we don't use "[...state.contracts" because we don't want to add on 
+				// Here we don't use "[...state.contracts" because we don't want to add on
 				// 	top of what we already have, instead we want to overwrite
 				contracts: [action.token],
 				symbols: [action.symbol]
@@ -73,16 +73,22 @@ export const tokens = (state = DEFAULT_TOKENS_STATE, action) => {
 	}
 }
 
-const DEFAULT_EXCHANGE_STATE = { 
-	loaded: false, 
+const DEFAULT_EXCHANGE_STATE = {
+	loaded: false,
 	contract: {},
 	transaction: {
 		isSuccessful: false
+	},
+	allOrders: {
+		loaded: false,
+		data: []
 	},
 	events: []
 };
 
 export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
+
+	let index, data;
 
 	switch (action.type) {
 		case 'EXCHANGE_LOADED':
@@ -103,7 +109,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 			};
 
 		// ----------------------------------------------------------------
-		// TRANSFER CASES 
+		// TRANSFER CASES
 		case 'TRANSFER_REQUEST':
 			return {
 				...state,
@@ -135,6 +141,50 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 					isError: true
 				},
 				transferInProgress: false,
+			};
+
+		// ----------------------------------------------------------------
+		// ORDER CASES
+		case 'NEW_ORDER_REQUEST':
+			return {
+				...state,
+				transaction: {
+					transactionType: 'New Order',
+					isPending: true,
+					isSuccessful: false
+				}
+			};
+		case 'NEW_ORDER_SUCCESS':
+			// to prevent duplicate orders
+			index = state.allOrders.data.findIndex( order => order.id === action.order.id);
+
+			if (index === -1) // if order doesn't exist yet, add it
+				data = [...state.allOrders.data, action.order];
+			else // else, ignore order
+			 	data = state.allOrders.data;
+
+			return {
+				...state,
+				allOrders: {
+					...state.allOrders,
+					data
+				},
+				transaction: {
+					transactionType: 'New Order',
+					isPending: false,
+					isSuccessful: true
+				},
+				events: [action.event, ...state.events]
+			};
+		case 'NEW_ORDER_FAIL':
+			return {
+				...state,
+				transaction: {
+					transactionType: 'New Order',
+					isPending: false,
+					isSuccessful: false,
+					isError: true
+				}
 			};
 
 		default:

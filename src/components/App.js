@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import config from '../config.json';
 
-import {  
-  loadProvider, 
+import {
+  loadProvider,
   loadNetwork,
   loadAccount,
   loadTokens,
@@ -14,6 +14,7 @@ import {
 import Navbar from './Navbar';
 import Markets from './Markets';
 import Balance from './Balance';
+import Order from './Order';
 
 function App() {
 
@@ -31,10 +32,10 @@ function App() {
 
     // connect Ethers to blockchain
     const provider = loadProvider(dispatch); // provider is going to be our connection to the blockchain
-    
+
     // fetch current network's chainId (hardhat:31337, kovan:42)
     const chainId = await loadNetwork(dispatch, provider);
-    
+
     // Reload page when network changes
     window.ethereum.on('chainChanged', () => {
       window.location.reload();
@@ -46,7 +47,7 @@ function App() {
       // Fetch current account and balance from metamask
       loadAccount(dispatch, provider);
     });
-    
+
     // Load tokens and exchange smart contracts
     const mDAI = config[chainId].mDAI;
     const mETH = config[chainId].mETH;
@@ -54,7 +55,7 @@ function App() {
 
     const exchangeConfig = config[chainId].exchange;
     const exchange = await loadExchange(dispatch, provider, exchangeConfig.address);
-  
+
     subscribeToEvents(dispatch, exchange);
   }
 
@@ -75,7 +76,7 @@ function App() {
 
           <Balance/>
 
-          {/* Order */}
+          <Order/>
 
         </section>
         <section className='exchange__section--right grid'>

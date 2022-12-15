@@ -2,7 +2,7 @@ const config = require('../src/config.json');
 
 // converts ETH to WEI (we use this because we assume that decimal number is the same as Eth decimal number in every case)
 const Tokens = (value) => {
-	return ethers.utils.parseUnits(value.toString(), 'ether');     
+	return ethers.utils.parseUnits(value.toString(), 'ether');
 }
 
 // used to wait some time between instructions in order to simulate real execution
@@ -78,7 +78,7 @@ async function main() {
 	await transaction.wait();
 	console.log(`Deposited ${amount} mETH from user2 ${user2.address}\n`);
 
-
+/*
 	let orderId;
 // --------------------------------------------------------------
 // Seed a Cancelled Order
@@ -159,7 +159,7 @@ async function main() {
 		console.log(`Make order from user1 ${user1.address}`);
 		wait(1);
 	}
-	
+
 	// user 1 makes 10 orders
 	for(let i = 0; i <= 10; i++) {
 		transaction = await exchange.connect(user2).makeOrder(mETH.address, Tokens(random()), mDAI.address, Tokens(random()));
@@ -167,8 +167,7 @@ async function main() {
 		console.log(`Make order from user2 ${user2.address}`);
 		wait(1);
 	}
-// --------------------------------------------------------------
-
+*/
 }
 
 // We recommend this pattern to be able to use async/await everywhere
