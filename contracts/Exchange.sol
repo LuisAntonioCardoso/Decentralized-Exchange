@@ -68,7 +68,7 @@ contract Exchange {
 	);
 
 	event FillOrder(
-		uint256 orderId,
+		uint256 id,
 		address orderCreator,
 		address orderTaker,
 		address tokenGive,
