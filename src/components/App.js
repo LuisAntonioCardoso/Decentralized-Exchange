@@ -8,6 +8,7 @@ import {
   loadAccount,
   loadTokens,
   loadExchange,
+  loadAllOrders,
   subscribeToEvents
 } from '../store/interactions.js';
 
@@ -15,6 +16,7 @@ import Navbar from './Navbar';
 import Markets from './Markets';
 import Balance from './Balance';
 import Order from './Order';
+import OrderBook from './OrderBook';
 
 function App() {
 
@@ -56,6 +58,8 @@ function App() {
     const exchangeConfig = config[chainId].exchange;
     const exchange = await loadExchange(dispatch, provider, exchangeConfig.address);
 
+    loadAllOrders(dispatch, provider, exchange);
+
     subscribeToEvents(dispatch, exchange);
   }
 
@@ -87,7 +91,7 @@ function App() {
 
           {/* Trades */}
 
-          {/* OrderBook */}
+          <OrderBook/>
 
         </section>
       </main>

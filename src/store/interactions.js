@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 
 import TOKEN_ABI from '../abis/Token.json';
 import EXCHANGE_ABI from '../abis/Exchange.json';
-import { provider } from './reducers';
 
 
 export const loadProvider = (dispatch) => {
@@ -16,6 +15,27 @@ export const loadProvider = (dispatch) => {
 	dispatch({type:'PROVIDER_LOADED', connection});
 
 	return connection;
+}
+
+export const loadAllOrders = async (dispatch, provider, exchange) => {
+
+	const block = await provider.getBlockNumber();
+
+	// Fetch cancelled orders
+	const cancelStream = await exchange.queryFilter('CancelOrder', 0, block);
+	const cancelledOrders = cancelStream.map( event => event.args);
+	dispatch({ type: 'CANCELLED_ORDERS_LOADED', cancelledOrders });
+
+	// Fetch filled orders
+	const filledStream = await exchange.queryFilter('FillOrder', 0, block);
+	const filledOrders = filledStream.map( event => event.args);
+	dispatch({ type: 'FILLED_ORDERS_LOADED', filledOrders });
+
+	// Fetch all orders
+	const orderStream = await exchange.queryFilter('OpenOrder', 0, block);
+	const allOrders = orderStream.map( event => event.args);
+	dispatch({ type: 'ALL_ORDERS_LOADED', allOrders });
+
 }
 
 export const loadNetwork = async (dispatch, provider) => {
@@ -61,6 +81,8 @@ export const loadTokens = async (dispatch, provider, addresses) => {
 }
 
 export const loadExchange = async (dispatch, provider, address) => {
+
+	console.log(EXCHANGE_ABI[3].inputs);
 
 	const exchange = new ethers.Contract(address, EXCHANGE_ABI, provider);
 	dispatch({ type: 'EXCHANGE_LOADED', exchange });

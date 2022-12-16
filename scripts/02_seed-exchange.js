@@ -78,7 +78,7 @@ async function main() {
 	await transaction.wait();
 	console.log(`Deposited ${amount} mETH from user2 ${user2.address}\n`);
 
-/*
+
 	let orderId;
 // --------------------------------------------------------------
 // Seed a Cancelled Order
@@ -167,7 +167,7 @@ async function main() {
 		console.log(`Make order from user2 ${user2.address}`);
 		wait(1);
 	}
-*/
+
 }
 
 // We recommend this pattern to be able to use async/await everywhere
