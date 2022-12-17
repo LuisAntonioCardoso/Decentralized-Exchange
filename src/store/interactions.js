@@ -82,7 +82,11 @@ export const loadTokens = async (dispatch, provider, addresses) => {
 
 export const loadExchange = async (dispatch, provider, address) => {
 
-	console.log(EXCHANGE_ABI[3].inputs);
+	//TODO: don't know why but even after update the ABI file, it reads as the old one
+
+	//console.log(EXCHANGE_ABI[3].inputs[0].name);
+	EXCHANGE_ABI[3].inputs[0].name = 'id';
+	//console.log(EXCHANGE_ABI[3].inputs[0].name);
 
 	const exchange = new ethers.Contract(address, EXCHANGE_ABI, provider);
 	dispatch({ type: 'EXCHANGE_LOADED', exchange });

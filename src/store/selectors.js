@@ -1,5 +1,5 @@
 import { createSelector } from 'reselect';
-import { get, groupBy, reject } from 'lodash';
+import { get, groupBy, reject, maxBy, minBy } from 'lodash';
 import moment from 'moment';
 import { ethers } from 'ethers';
 
@@ -8,21 +8,23 @@ const cancelledOrders = state => get(state, 'exchange.cancelledOrders.data', [])
 const filledOrders = state => get(state, 'exchange.filledOrders.data', []);
 const allOrders = state => get(state, 'exchange.allOrders.data', []);
 
-const openOrders = state => {
+const openOrders = state =>
+{
 	const cancelled = cancelledOrders(state);
 	const filled = filledOrders(state);
 	const all = allOrders(state);
 
 	const openOrders = reject( all, (order) => {
 		const orderCancelled = cancelled.some( (o) => o.id.toString() === order.id.toString() ); // verify if the order in all has the same id of one in cancelled
-		const orderFilled = filled.some( (o) => o.orderId.toString() === order.id.toString() ); // verify if the order in all has the same id of one in filled
+		const orderFilled = filled.some( (o) => o.id.toString() === order.id.toString() ); // verify if the order in all has the same id of one in filled
 		return( orderCancelled || orderFilled ); // if the order exists in cancelled or in filled, then proceed to reject
 	});
 
 	return openOrders;
 }
 
-const decorateOrder = (order, tokens) => {
+const decorateOrder = (order, tokens) =>
+{
 
 	let token0Amount, token1Amount;
 
@@ -62,8 +64,7 @@ export const orderBookSelector = createSelector(
 		if( !tokens[0] || !tokens[0] ) return;
 
 		// filter orders by selectedTokens
-		orders = orders.filter( (order) => order.tokenGet === tokens[0].address || order.tokenGet === tokens[1].address );
-		orders = orders.filter( (order) => order.tokenGive === tokens[0].address || order.tokenGive === tokens[1].address );
+		orders = filterOrdersByToken(orders, tokens);
 
 		// decorate orders (by going through everyone individually)
 		// decoration with the purpose of make it easy to access the information about the order later
@@ -93,7 +94,8 @@ export const orderBookSelector = createSelector(
 const GREEN = '#25CE8F';
 const RED = '#F45353';
 // as we want to use decorate order in other contexts, we use this decorator to add things in this specific context
-const decorateOrderBookOrder = (order, tokens) => {
+const decorateOrderBookOrder = (order, tokens) =>
+{
 
 	let orderType, orderTypeClass, orderFillAction;
 	if(  order.tokenGive === tokens[1].address )
@@ -118,7 +120,8 @@ const decorateOrderBookOrder = (order, tokens) => {
 }
 
 // this is going to wrap everything in decoration of orders in the order book context
-const decorateOrderBookOrders = (orders, tokens) => {
+const decorateOrderBookOrders = (orders, tokens) =>
+{
 
 	return(
 		orders.map( (order) =>
@@ -128,4 +131,76 @@ const decorateOrderBookOrders = (orders, tokens) => {
 			return order;
 		})
 	);
+}
+
+// ----------------------------------------------------------------
+// PRICE CHART
+
+export const priceChartSelector = createSelector(
+	filledOrders,
+	tokens,
+	(orders, tokens) =>
+	{
+		if( !tokens[0] || !tokens[1] ) return;
+
+		orders = filterOrdersByToken(orders, tokens);
+
+		// sort orders by date
+		orders = orders.sort( (a,b) => a.timestamp - b.timestamp );
+
+		// decorate orders
+		orders = orders.map( (order) => decorateOrder(order, tokens));
+
+		// get last 2 orders
+		let lastOrder, secondLastOrder;
+		[secondLastOrder, lastOrder] = orders.slice(orders.length - 2, orders.length);
+
+		const lastPrice = get(lastOrder, 'tokenPrice', 0); // if lastOrder is null return 0, else return tokenPrice property
+		const secondLastPrice = get(secondLastOrder, 'tokenPrice', 0); // if lastOrder is null return 0, else return tokenPrice property
+
+		return({
+			lastPrice,
+			lastPriceChange: (lastPrice >= secondLastPrice ? '+' : '-'),
+			series: [{
+				data: buildGraphData(orders)
+			}]
+		});
+
+	}
+)
+
+const buildGraphData = (orders) =>
+{
+	// as we don't want to group by every individual time(simple attribute), we need to use a function
+	// we use the moment.unix to group time intervals(hour, day, month) with .startOf()
+	orders = groupBy(orders, (order) => moment.unix(order.timestamp).startOf('hour').format() );
+
+	const hours = Object.keys(orders);
+
+	const graphData = hours.map( (hour) => 
+	{
+		// fetch all order from current hour
+		const group = orders[hour];
+
+		//calculate price values: open, close, high, low
+		const open = group[0]; // first order
+		const high = maxBy(group, 'tokenPrice'); // highest price
+		const low = minBy(group, 'tokenPrice'); // lowest price
+		const close = group[group.length - 1]; // last order
+
+		return({
+			x: new Date(hour), // value for the time
+			y: [open.tokenPrice, high.tokenPrice, low.tokenPrice, close.tokenPrice]	// candlestick data (open, close, high, low)
+		});
+	});
+
+	return graphData;
+}
+
+const filterOrdersByToken = (orders, tokens) =>
+{
+	orders = orders.filter( (order) => order.tokenGet === tokens[0].address || order.tokenGet === tokens[1].address );
+	orders = orders.filter( (order) => order.tokenGive === tokens[0].address || order.tokenGive === tokens[1].address );
+
+	return orders;
 }
