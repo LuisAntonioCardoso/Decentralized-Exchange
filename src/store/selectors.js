@@ -54,6 +54,65 @@ const decorateOrder = (order, tokens) =>
 }
 
 // ----------------------------------------------------------------
+// ALL FILLED ORDERS
+
+export const filledOrdersSelector = createSelector(
+	filledOrders,
+	tokens,
+	(orders, tokens) =>
+	{
+		if( !tokens[0] || !tokens[1] ) return;
+
+		// filter orders by selectedTokens
+		orders = orders.filter( (order) => order.tokenGet === tokens[0].address || order.tokenGet === tokens[1].address );
+		orders = orders.filter( (order) => order.tokenGive === tokens[0].address || order.tokenGive === tokens[1].address );
+
+		// sort orders by ascending time
+		orders = orders.sort( (a,b) => a.timestamp - b.timestamp );
+
+		// decorate orders
+		orders = decorateFilledOrders(orders, tokens);
+
+		// sort orders by descending time
+		orders = orders.sort( (a,b) => b.timestamp - a.timestamp );
+
+		return orders;
+	}
+);
+
+const decorateFilledOrders = (orders, tokens) =>
+{
+	let previousOrder = orders[0];
+
+	return(
+		orders = orders.map( (order) =>
+		{
+			order = decorateOrder(order, tokens);
+			order = decorateFilledOrder(order, previousOrder);
+			previousOrder = order;	// track this order to use in next iteration
+
+			return order;
+		})
+	);
+}
+
+const decorateFilledOrder = (order, previousOrder) =>
+{
+	return({
+		...order,
+		tokenPriceClass: tokenPriceClass(order.tokenPrice, previousOrder.tokenPrice)
+	});
+}
+
+const tokenPriceClass = (tokenPrice, previousOrderPrice) =>
+{
+	if( previousOrderPrice <= tokenPrice )
+		return GREEN;
+	else
+		return RED;
+}
+
+// ----------------------------------------------------------------
 // ORDER BOOK
 
 export const orderBookSelector = createSelector(
@@ -61,10 +120,11 @@ export const orderBookSelector = createSelector(
 	tokens,
 	(orders, tokens) =>
 	{
-		if( !tokens[0] || !tokens[0] ) return;
+		if( !tokens[0] || !tokens[1] ) return;
 
 		// filter orders by selectedTokens
-		orders = filterOrdersByToken(orders, tokens);
+		orders = orders.filter( (order) => order.tokenGet === tokens[0].address || order.tokenGet === tokens[1].address );
+		orders = orders.filter( (order) => order.tokenGive === tokens[0].address || order.tokenGive === tokens[1].address );
 
 		// decorate orders (by going through everyone individually)
 		// decoration with the purpose of make it easy to access the information about the order later
@@ -143,9 +203,10 @@ export const priceChartSelector = createSelector(
 	{
 		if( !tokens[0] || !tokens[1] ) return;
 
-		orders = filterOrdersByToken(orders, tokens);
+		orders = orders.filter( (order) => order.tokenGet === tokens[0].address || order.tokenGet === tokens[1].address );
+		orders = orders.filter( (order) => order.tokenGive === tokens[0].address || order.tokenGive === tokens[1].address );
 
-		// sort orders by date
+		// sort orders by time
 		orders = orders.sort( (a,b) => a.timestamp - b.timestamp );
 
 		// decorate orders
@@ -177,7 +238,7 @@ const buildGraphData = (orders) =>
 
 	const hours = Object.keys(orders);
 
-	const graphData = hours.map( (hour) => 
+	const graphData = hours.map( (hour) =>
 	{
 		// fetch all order from current hour
 		const group = orders[hour];
@@ -195,12 +256,4 @@ const buildGraphData = (orders) =>
 	});
 
 	return graphData;
-}
-
-const filterOrdersByToken = (orders, tokens) =>
-{
-	orders = orders.filter( (order) => order.tokenGet === tokens[0].address || order.tokenGet === tokens[1].address );
-	orders = orders.filter( (order) => order.tokenGive === tokens[0].address || order.tokenGive === tokens[1].address );
-
-	return orders;
 }
