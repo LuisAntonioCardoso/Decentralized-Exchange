@@ -4,6 +4,8 @@ import moment from 'moment';
 import { ethers } from 'ethers';
 
 const tokens = state => get(state, 'tokens.contracts');
+const account = state => get(state, 'provider.account');
+
 const cancelledOrders = state => get(state, 'exchange.cancelledOrders.data', []);
 const filledOrders = state => get(state, 'exchange.filledOrders.data', []);
 const allOrders = state => get(state, 'exchange.allOrders.data', []);
@@ -50,6 +52,57 @@ const decorateOrder = (order, tokens) =>
 		token1Amount: Math.round( ethers.utils.formatUnits(token1Amount,"ether") * 10) / 10,
 		tokenPrice,	// if the name of the attribute returned is the same as the variable that contains the data, you don't need to write everything ("tokenPrice : tokenPrice")
 		formattedTimestamp: moment.unix(order.timestamp).format('h:mm:ssa d MMM D')
+	});
+}
+
+// ----------------------------------------------------------------
+// MY OPEN ORDERS
+
+export const myOpenOrdersSelector = createSelector(
+	account,
+	tokens,
+	openOrders,
+	(account, tokens, orders) =>
+	{
+		if( !tokens[0] || !tokens[1]) return;
+
+		// filter out the orders made by other users
+		orders = orders.filter( (order) => order.user === account );
+
+		// filter orders by selectedTokens
+		orders = orders.filter( (order) => order.tokenGet === tokens[0].address || order.tokenGet === tokens[1].address );
+		orders = orders.filter( (order) => order.tokenGive === tokens[0].address || order.tokenGive === tokens[1].address );
+
+		orders = decorateMyOpenOrders(orders, tokens);
+
+		// sort orders by descending date
+		orders = orders.sort( (a, b) => b.timestamp - a.timestamp );
+
+		return orders;
+	}
+)
+
+const decorateMyOpenOrders = (orders, tokens) =>
+{
+	return(
+		orders.map( (order) =>
+		{
+			order = decorateOrder(order, tokens);
+			order = decorateMyOpenOrder(order, tokens);
+			return order;
+		})
+	);
+}
+
+const decorateMyOpenOrder = (order, tokens) =>
+{
+	const orderType = order.tokenGive === tokens[1].address ? 'buy' : 'sell';
+	const orderTypeClass = orderType === 'buy' ? 'GREEN' : 'RED';
+
+	return({
+		...order,
+		orderType,
+		orderTypeClass
 	});
 }
 
