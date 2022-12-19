@@ -107,6 +107,63 @@ const decorateMyOpenOrder = (order, tokens) =>
 }
 
 // ----------------------------------------------------------------
+// MY FILLED ORDERS
+
+export const myFilledOrdersSelector = createSelector(
+	account,
+	tokens,
+	filledOrders,
+	(account, tokens, orders) =>
+	{
+		if( !tokens[0] || !tokens[1]) return;
+
+		// filter out the orders made by other users
+		orders = orders.filter( (order) => order.orderTaker === account || order.orderCreator === account );
+
+		// filter orders by selectedTokens
+		orders = orders.filter( (order) => order.tokenGet === tokens[0].address || order.tokenGet === tokens[1].address );
+		orders = orders.filter( (order) => order.tokenGive === tokens[0].address || order.tokenGive === tokens[1].address );
+
+		// sort orders by descending date
+		orders = orders.sort( (a, b) => b.timestamp - a.timestamp );
+
+		orders = decorateMyFilledOrders(orders, account, tokens);
+
+		return orders;
+	}
+)
+
+const decorateMyFilledOrders = (orders, account, tokens) =>
+{
+	return(
+		orders.map( (order) =>
+		{
+			order = decorateOrder(order, tokens);
+			order = decorateMyFilledOrder(order, account, tokens);
+			return order;
+		})
+	);
+}
+
+const decorateMyFilledOrder = (order, account, tokens) =>
+{
+	const myOrder = order.creator === account;
+
+	let orderType;
+	if(myOrder)
+		orderType = order.tokenGive === tokens[1].address ? 'buy' : 'sell';
+	else
+		orderType = order.tokenGive === tokens[1].address ? 'sell' : 'buy';
+
+	return({
+		...order,
+		orderType,
+		orderTypeClass: orderType === 'buy' ? 'GREEN' : 'RED',
+		orderSign: orderType === 'buy' ? '+' : '-'
+	});
+}
+
+// ----------------------------------------------------------------
 // ALL FILLED ORDERS
 
 export const filledOrdersSelector = createSelector(
