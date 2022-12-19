@@ -3,7 +3,7 @@ const { expect } = require("chai");
 
 const Tokens = (value) => {
 	// converts ETH to WEI (we use this because decimal number is the same as Eth decimal number)
-	return ethers.utils.parseUnits(value.toString(), 'ether');     
+	return ethers.utils.parseUnits(value.toString(), 'ether');
 }
 
 describe('Exchange', () => {
@@ -40,7 +40,7 @@ describe('Exchange', () => {
 	});
 
 	describe('Deployment', () => {
-    
+
 		it('it tracks the fee account', async () => {
 			expect(await exchange.feeAccount()).to.equal(feeAccount.address);
 		});
@@ -59,7 +59,7 @@ describe('Exchange', () => {
 		describe('Success', () => {
 
 			beforeEach( async () => {
-			
+
 				amount = Tokens(10);
 				// approve token
 				transaction = await token1.connect(user1).approve(exchange.address, amount);
@@ -94,7 +94,7 @@ describe('Exchange', () => {
 
 				amount = Tokens(10);
 
-				await expect(exchange.connect(user1).depositToken(token1.address, amount)).to.be.reverted;				
+				await expect(exchange.connect(user1).depositToken(token1.address, amount)).to.be.reverted;
 			});
 
 			it('fails when not enough tokens are not approved', async () => {
@@ -105,7 +105,7 @@ describe('Exchange', () => {
 				transaction = await token1.connect(user1).approve(exchange.address, smallAmount);
 				result = await transaction.wait();
 
-				await expect(exchange.connect(user1).depositToken(token1.address, amount)).to.be.reverted;				
+				await expect(exchange.connect(user1).depositToken(token1.address, amount)).to.be.reverted;
 			});
 		});
 	});
@@ -118,7 +118,7 @@ describe('Exchange', () => {
 			withdrawAmount;
 
 		beforeEach( async () => {
-		
+
 			// deposit tokens before withdraw
 			depositedAmount = Tokens(10);
 			// approve token
@@ -132,7 +132,7 @@ describe('Exchange', () => {
 		describe('Success', () => {
 
 			beforeEach( async () => {
-			
+
 				withdrawAmount = Tokens(5);
 				// withdraw tokens
 				transaction = await exchange.connect(user1).withdrawToken(token1.address, withdrawAmount);
@@ -164,12 +164,12 @@ describe('Exchange', () => {
 
 				withdrawAmount = Tokens(15);
 
-				await expect(exchange.connect(user1).withdrawToken(token1.address, withdrawAmount)).to.be.reverted;				
+				await expect(exchange.connect(user1).withdrawToken(token1.address, withdrawAmount)).to.be.reverted;
 			});
 		});
 	});
 
-	// basic unit test on the function level 
+	// basic unit test on the function level
 	describe('Checking Balances', () => {
 
 		let amount,
@@ -177,7 +177,7 @@ describe('Exchange', () => {
 			result;
 
 		beforeEach( async () => {
-		
+
 			amount = Tokens(1);
 			// approve token
 			transaction = await token1.connect(user1).approve(exchange.address, amount);
@@ -199,7 +199,7 @@ describe('Exchange', () => {
 			amount;
 
 		beforeEach( async () => {
-		
+
 			amount = Tokens('1');
 			// deposit tokens
 			transaction = await token1.connect(user1).approve(exchange.address, amount);
@@ -251,14 +251,14 @@ describe('Exchange', () => {
 			result;
 
 		beforeEach( async () => {
-		
+
 			// deposit tokens for user 1
 			transaction = await token1.connect(user1).approve(exchange.address, Tokens('1'));
 			result = await transaction.wait();
 
 			transaction = await exchange.connect(user1).depositToken(token1.address, Tokens('1'));
 			result = await transaction.wait();
-			
+
 			// deposit tokens for user 2
 			transaction = await token2.connect(deployer).transfer(user2.address, Tokens('100'));
 			result = await transaction.wait();
@@ -277,7 +277,7 @@ describe('Exchange', () => {
 		describe('Cancelling Orders', () => {
 
 			describe('Success', () => {
-	
+
 				beforeEach( async () => {
 					transaction = await exchange.connect(user1).cancelOrder(1);
 					result = await transaction.wait();
@@ -286,11 +286,11 @@ describe('Exchange', () => {
 				it('updates cancelled orders', async () => {
 					expect( await exchange.ordersCancelled(1)).to.equal(true);
 				});
-	
+
 				it('emits cancel order event', async () => {
 					const event = result.events[0];
 					expect(event.event).to.equal('CancelOrder');
-	
+
 					const args = event.args;
 					expect(args.id).to.equal(1);
 					expect(args.user).to.equal(user1.address);
@@ -301,9 +301,9 @@ describe('Exchange', () => {
 					expect(args.timestamp).to.at.least(1);
 				});
 			});
-	
+
 			describe('Failure', () => {
-	
+
 				it('rejects invalid order ids', async () => {
 					await expect(exchange.connect(user1).cancelOrder(999)).to.be.reverted;
 				});
@@ -313,11 +313,11 @@ describe('Exchange', () => {
 				});
 			});
 		});
-		
+
 		describe('Filling Orders', () => {
 
 			describe('Success', () => {
-	
+
 				beforeEach( async () => {
 					transaction = await exchange.connect(user2).fillOrder('1');
 					result = await transaction.wait();
@@ -327,20 +327,20 @@ describe('Exchange', () => {
 					expect(await exchange.balanceOf(token1.address, user1.address)).to.equal(Tokens(0));
 					expect(await exchange.balanceOf(token1.address, user2.address)).to.equal(Tokens(1));
 					expect(await exchange.balanceOf(token1.address, feeAccount.address)).to.equal(Tokens(0));
-					
+
 					expect(await exchange.balanceOf(token2.address, user1.address)).to.equal(Tokens(1));
 					expect(await exchange.balanceOf(token2.address, user2.address)).to.equal(Tokens(0.9));
 					expect(await exchange.balanceOf(token2.address, feeAccount.address)).to.equal(Tokens(0.1));
 				});
-	
+
 				it('updates filled orders', async () => {
 					expect( await exchange.ordersFilled(1)).to.equal(true);
 				});
-	
+
 				it('emits a tarde event', async () => {
 					const event = result.events[0];
 					expect(event.event).to.equal('Trade');
-	
+
 					const args = event.args;
 					expect(args.orderId).to.equal(1);
 					expect(args.orderCreator).to.equal(user1.address);
@@ -351,11 +351,11 @@ describe('Exchange', () => {
 					expect(args.amountGet).to.equal(Tokens('1'));
 					expect(args.timestamp).to.at.least(1);
 				});
-				
+
 			});
-	
+
 			describe('Failure', () => {
-	
+
 				it('rejects invalid order ids', async () => {
 					await expect(exchange.connect(user2).fillOrder(999)).to.be.reverted;
 				});
@@ -374,7 +374,7 @@ describe('Exchange', () => {
 					await expect(exchange.connect(user2).fillOrder(1)).to.be.reverted;
 				});
 			});
-			
+
 		});
 	});
 });
