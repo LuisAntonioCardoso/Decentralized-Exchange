@@ -2,7 +2,6 @@
 // since we are going to use the reducers in other files, we need to use "export" (in the interactions file)
 
 export const provider = (state = {}, action) => {
-
 	switch (action.type) {
 		case 'PROVIDER_LOADED':
 			return {
@@ -30,7 +29,7 @@ export const provider = (state = {}, action) => {
 		default:
 			return state;
 	}
-}
+};
 
 const DEFAULT_TOKENS_STATE = {
 	loaded: false,
@@ -39,7 +38,6 @@ const DEFAULT_TOKENS_STATE = {
 };
 
 export const tokens = (state = DEFAULT_TOKENS_STATE, action) => {
-
 	switch (action.type) {
 		case 'TOKEN_1_LOADED':
 			return {
@@ -71,7 +69,7 @@ export const tokens = (state = DEFAULT_TOKENS_STATE, action) => {
 		default:
 			return state;
 	}
-}
+};
 
 const DEFAULT_EXCHANGE_STATE = {
 	loaded: false,
@@ -87,7 +85,6 @@ const DEFAULT_EXCHANGE_STATE = {
 };
 
 export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
-
 	let index, data;
 
 	switch (action.type) {
@@ -170,7 +167,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 					isSuccessful: false,
 					isError: true
 				},
-				transferInProgress: false,
+				transferInProgress: false
 			};
 
 		// ----------------------------------------------------------------
@@ -186,12 +183,15 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 			};
 		case 'NEW_ORDER_SUCCESS':
 			// to prevent duplicate orders
-			index = state.allOrders.data.findIndex( order => order.id.toString() === action.order.id.toString());
+			index = state.allOrders.data.findIndex(
+				(order) => order.id.toString() === action.order.id.toString()
+			);
 
-			if (index === -1) // if order doesn't exist yet, add it
+			if (index === -1)
+				// if order doesn't exist yet, add it
 				data = [...state.allOrders.data, action.order];
-			else // else, ignore order
-			 	data = state.allOrders.data;
+			// else, ignore order
+			else data = state.allOrders.data;
 
 			return {
 				...state,
@@ -220,4 +220,4 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 		default:
 			return state;
 	}
-}
+};
