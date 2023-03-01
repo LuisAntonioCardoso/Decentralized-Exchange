@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 
 const tokens = (state) => get(state, 'tokens.contracts');
 const account = (state) => get(state, 'provider.account');
+const events = (state) => get(state, 'exchange.events');
 
 const cancelledOrders = (state) => get(state, 'exchange.cancelledOrders.data', []);
 const filledOrders = (state) => get(state, 'exchange.filledOrders.data', []);
@@ -48,6 +49,14 @@ const decorateOrder = (order, tokens) => {
 		formattedTimestamp: moment.unix(order.timestamp).format('h:mm:ssa d MMM D')
 	};
 };
+
+// ----------------------------------------------------------------
+// MY OPEN ORDERS
+
+export const myEventsSelector = createSelector(account, events, (account, events) => {
+	events = events.filter((event) => event.args.user === account);
+	return events;
+});
 
 // ----------------------------------------------------------------
 // MY OPEN ORDERS
