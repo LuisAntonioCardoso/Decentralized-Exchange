@@ -1,7 +1,6 @@
 {
 	"31337": {
 		"explorerURL": "#",
-
 		"exchange": {
 			"address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
 		},
@@ -16,6 +15,33 @@
 		}
 	},
 	"5": {
-		"explorerURL": "https://goerli.etherscan.io/"
+		"explorerURL": "https://goerli.etherscan.io/",
+		"exchange": {
+			"address": "0xF44CfDd21e0928793F4EfA50904fCAc25c72FB5a"
+		},
+		"mDAI": {
+			"address": "0x0256B882699F3224eB328C74e4a5937A201529b3"
+		},
+		"mBTC": {
+			"address": "0x80F86b25D9DE5FACc9ffF98a443F1254b3F8cF25"
+		},
+		"mETH": {
+			"address": "0x867174d90D66D27C6cF60cEDDA0622e59241c080"
+		}
+	},
+	"80001": {
+		"explorerURL": "https://mumbai.polygonscan.com/",
+		"exchange": {
+			"address": "0xF44CfDd21e0928793F4EfA50904fCAc25c72FB5a"
+		},
+		"mDAI": {
+			"address": "0x0256B882699F3224eB328C74e4a5937A201529b3"
+		},
+		"mBTC": {
+			"address": "0x80F86b25D9DE5FACc9ffF98a443F1254b3F8cF25"
+		},
+		"mETH": {
+			"address": "0x867174d90D66D27C6cF60cEDDA0622e59241c080"
+		}
 	}
 }
