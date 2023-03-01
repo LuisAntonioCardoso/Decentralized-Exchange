@@ -36,7 +36,6 @@ const Transactions = () => {
 
 	const cancelHandler = (order) => {
 		cancelOrder(dispatch, provider, exchange, order);
-		console.log('cancel order: ', order);
 	};
 
 	return (

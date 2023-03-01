@@ -78,9 +78,9 @@ export const loadTokens = async (dispatch, provider, addresses) => {
 export const loadExchange = async (dispatch, provider, address) => {
 	//TODO: don't know why but even after update the ABI file, it reads as the old one
 
-	//console.log(EXCHANGE_ABI[3].inputs[0].name);
+	console.log(EXCHANGE_ABI[3].inputs[0].name);
 	EXCHANGE_ABI[3].inputs[0].name = 'id';
-	//console.log(EXCHANGE_ABI[3].inputs[0].name);
+	console.log(EXCHANGE_ABI[3].inputs[0].name);
 
 	const exchange = new ethers.Contract(address, EXCHANGE_ABI, provider);
 	dispatch({ type: 'EXCHANGE_LOADED', exchange });
@@ -140,6 +140,9 @@ export const transferTokens = async (dispatch, provider, exchange, transferType,
 	}
 };
 
+// ----------------------------------------------------------------
+// EVENTS LISTENERS
+
 export const subscribeToEvents = (dispatch, exchange) => {
 	exchange.on('Deposit', (token, user, amount, balance, event) => {
 		dispatch({ type: 'TRANSFER_SUCCESS', event });
@@ -147,7 +150,6 @@ export const subscribeToEvents = (dispatch, exchange) => {
 	exchange.on('Withdraw', (token, user, amount, balance, event) => {
 		dispatch({ type: 'TRANSFER_SUCCESS', event });
 	});
-
 	exchange.on(
 		'OpenOrder',
 		(id, user, tokenGive, amountGive, tokenGet, amountGet, timestamp, event) => {
@@ -155,12 +157,28 @@ export const subscribeToEvents = (dispatch, exchange) => {
 			dispatch({ type: 'NEW_ORDER_SUCCESS', order, event });
 		}
 	);
-
 	exchange.on(
 		'CancelOrder',
 		(id, user, tokenGive, amountGive, tokenGet, amountGet, timestamp, event) => {
 			const order = event.args;
 			dispatch({ type: 'ORDER_CANCEL_SUCCESS', order, event });
+		}
+	);
+	exchange.on(
+		'FillOrder',
+		(
+			id,
+			orderCreator,
+			orderTaker,
+			tokenGive,
+			amountGive,
+			tokenGet,
+			amountGet,
+			timestamp,
+			event
+		) => {
+			const order = event.args;
+			dispatch({ type: 'ORDER_FILL_SUCCESS', order, event });
 		}
 	);
 };
@@ -200,7 +218,7 @@ export const makeOrder = async (dispatch, provider, exchange, isBuy, tokens, ord
 };
 
 // ----------------------------------------------------------------
-// LOAD USER BALANCES (WALLET AND EXCHANGE)
+// CANCEL ORDER
 
 export const cancelOrder = async (dispatch, provider, exchange, order) => {
 	dispatch({ type: 'ORDER_CANCEL_REQUEST' });
@@ -213,6 +231,24 @@ export const cancelOrder = async (dispatch, provider, exchange, order) => {
 		// TODO: change this to alert the user in case of error
 
 		dispatch({ type: 'ORDER_CANCEL_FAIL' });
+		console.error(error);
+	}
+};
+
+// ----------------------------------------------------------------
+// FILL ORDER
+
+export const fillOrder = async (dispatch, provider, exchange, order) => {
+	dispatch({ type: 'ORDER_FILL_REQUEST' });
+
+	try {
+		const signer = await provider.getSigner();
+		const transaction = await exchange.connect(signer).fillOrder(order.id);
+		await transaction.wait();
+	} catch (error) {
+		// TODO: change this to alert the user in case of error
+
+		dispatch({ type: 'ORDER_FILL_FAIL' });
 		console.error(error);
 	}
 };

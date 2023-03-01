@@ -81,6 +81,12 @@ const DEFAULT_EXCHANGE_STATE = {
 		loaded: false,
 		data: []
 	},
+	cancelledOrders: {
+		data: []
+	},
+	filledOrders: {
+		data: []
+	},
 	events: []
 };
 
@@ -124,12 +130,12 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 				}
 			};
 
-		// BALANCE CASES
+		// CANCELLING ORDERS
 		case 'ORDER_CANCEL_REQUEST':
 			return {
 				...state,
 				transaction: {
-					transactionType: 'Cancel',
+					transactionType: 'Cancel Order',
 					isPending: true,
 					isSuccessful: false
 				}
@@ -138,7 +144,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 			return {
 				...state,
 				transaction: {
-					transactionType: 'Cancel',
+					transactionType: 'Cancel Order',
 					isPending: false,
 					isSuccessful: true
 				},
@@ -152,7 +158,53 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 			return {
 				...state,
 				transaction: {
-					transactionType: 'Cancel',
+					transactionType: 'Cancel Order',
+					isPending: false,
+					isSuccessful: false,
+					isError: true
+				}
+			};
+
+		// FILLING ORDERS
+		case 'ORDER_FILL_REQUEST':
+			return {
+				...state,
+				transaction: {
+					transactionType: 'Fill Order',
+					isPending: true,
+					isSuccessful: false
+				}
+			};
+		case 'ORDER_FILL_SUCCESS':
+			// prevent duplicates
+			index = state.filledOrders.data.findIndex(
+				(order) => order.id.toString() === action.order.id.toString()
+			);
+
+			if (index === -1) {
+				data = [...state.filledOrders.data, action.order];
+			} else {
+				data = state.filledOrders.data;
+			}
+
+			return {
+				...state,
+				transaction: {
+					transactionType: 'Fill Order',
+					isPending: false,
+					isSuccessful: true
+				},
+				filledOrders: {
+					...state.filledOrders,
+					data
+				},
+				events: [action.event, ...state.events]
+			};
+		case 'ORDER_FILL_FAIL':
+			return {
+				...state,
+				transaction: {
+					transactionType: 'Fill Order',
 					isPending: false,
 					isSuccessful: false,
 					isError: true
@@ -208,7 +260,7 @@ export const exchange = (state = DEFAULT_EXCHANGE_STATE, action) => {
 			};
 
 		// ----------------------------------------------------------------
-		// ORDER CASES
+		// NEW ORDER CASES
 		case 'NEW_ORDER_REQUEST':
 			return {
 				...state,
